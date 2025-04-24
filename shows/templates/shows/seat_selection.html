@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Seats - {{ showtime.show.title }} - Ticket Booking System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>Select Seats</h1>
+        <h3>{{ showtime.show.title }}</h3>
+        <p>Date: {{ showtime.date|date:"l, F j, Y" }}</p>
+        <p>Time: {{ showtime.time|time:"g:i A" }}</p>
+        <p>Price per seat: ${{ showtime.price }}</p>
+        
+        <div class="mt-4 mb-4">
+            <div class="seat-legend d-flex gap-3 mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="seat available me-2"></div>
+                    <span>Available</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="seat selected me-2"></div>
+                    <span>Selected</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="seat reserved me-2"></div>
+                    <span>Reserved</span>
+                </div>
+            </div>
+            
+            <div class="screen mb-5">
+                <div class="screen-text">SCREEN</div>
+            </div>
+            
+            <form method="post" action="{% url 'bookings:create' showtime.id %}" id="booking-form">
+                {% csrf_token %}
+                <div class="seat-container">
+                    {% for row, seats in seat_map.items %}
+                        <div class="seat-row mb-2">
+                            <div class="row-label">{{ row }}</div>
+                            {% for seat in seats %}
+                                <div class="seat-wrapper">
+                                    <input type="checkbox" name="selected_seats" value="{{ seat.id }}" id="seat-{{ seat.id }}" 
+                                        {% if seat.is_reserved %}disabled{% endif %} class="seat-checkbox">
+                                    <label for="seat-{{ seat.id }}" class="seat {% if seat.is_reserved %}reserved{% endif %}" 
+                                        data-seat-id="{{ seat.id }}" data-seat-price="{{ showtime.price }}">
+                                        {{ seat.number }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header">
+                <h4>Booking Summary</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Show:</strong> {{ showtime.show.title }}</p>
+                <p><strong>Date:</strong> {{ showtime.date|date:"l, F j, Y" }}</p>
+                <p><strong>Time:</strong> {{ showtime.time|time:"g:i A" }}</p>
+                <p><strong>Price per seat:</strong> ${{ showtime.price }}</p>
+                
+                <div class="selected-seats mt-3">
+                    <h5>Selected Seats</h5>
+                    <ul id="selected-seats-list" class="list-group mb-3">
+                        <li class="list-group-item text-center">No seats selected</li>
+                    </ul>
+                </div>
+                
+                <div class="total-price">
+                    <h5>Total Price</h5>
+                    <p class="h3 text-center" id="total-price">$0.00</p>
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" form="booking-form" class="btn btn-primary" id="book-button" disabled>
+                        Book Tickets
+                    </button>
+                    <a href="{% url 'shows:detail' showtime.show.id %}" class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .seat-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .seat-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .row-label {
+        width: 30px;
+        text-align: center;
+        font-weight: bold;
+    }
+    
+    .seat-wrapper {
+        margin: 0 5px;
+    }
+    
+    .seat-checkbox {
+        display: none;
+    }
+    
+    .seat {
+        display: block;
+        width: 35px;
+        height: 35px;
+        line-height: 35px;
+        text-align: center;
+        background-color: #51a351;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        user-select: none;
+    }
+    
+    .seat.reserved {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+    
+    .seat-checkbox:checked + .seat {
+        background-color: #0275d8;
+    }
+    
+    .seat-legend .seat {
+        display: inline-block;
+        width: 25px;
+        height: 25px;
+        line-height: 25px;
+    }
+    
+    .seat-legend .available {
+        background-color: #51a351;
+    }
+    
+    .seat-legend .selected {
+        background-color: #0275d8;
+    }
+    
+    .seat-legend .reserved {
+        background-color: #cccccc;
+    }
+    
+    .screen {
+        width: 80%;
+        height: 20px;
+        background-color: #f8f9fa;
+        margin: 0 auto 30px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        position: relative;
+    }
+    
+    .screen-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const seatCheckboxes = document.querySelectorAll('.seat-checkbox');
+        const selectedSeatsList = document.getElementById('selected-seats-list');
+        const totalPriceElement = document.getElementById('total-price');
+        const bookButton = document.getElementById('book-button');
+        const seatPrice = parseFloat('{{ showtime.price }}');
+        
+        function updateBookingSummary() {
+            const selectedSeats = Array.from(seatCheckboxes).filter(checkbox => checkbox.checked);
+            
+            if (selectedSeats.length === 0) {
+                selectedSeatsList.innerHTML = '<li class="list-group-item text-center">No seats selected</li>';
+                totalPriceElement.textContent = '$0.00';
+                bookButton.disabled = true;
+            } else {
+                selectedSeatsList.innerHTML = '';
+                
+                selectedSeats.forEach(checkbox => {
+                    const seatLabel = document.querySelector(`label[for="${checkbox.id}"]`);
+                    const row = seatLabel.closest('.seat-row').querySelector('.row-label').textContent;
+                    const number = seatLabel.textContent.trim();
+                    
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item d-flex justify-content-between';
+                    listItem.innerHTML = `
+                        <span>Seat ${row}${number}</span>
+                        <span>$${seatPrice.toFixed(2)}</span>
+                    `;
+                    selectedSeatsList.appendChild(listItem);
+                });
+                
+                const totalPrice = selectedSeats.length * seatPrice;
+                totalPriceElement.textContent = `$${totalPrice.toFixed(2)}`;
+                bookButton.disabled = false;
+            }
+        }
+        
+        seatCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateBookingSummary);
+        });
+        
+        // Initialize booking summary
+        updateBookingSummary();
+    });
+</script>
+{% endblock %}

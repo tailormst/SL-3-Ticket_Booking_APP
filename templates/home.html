@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Ticket Booking System{% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to Ticket Booking System</h1>
+    <p class="lead">Book tickets for your favorite shows, movies, and events.</p>
+    <hr class="my-4">
+    <p>Browse through our collection of shows and secure your seats today!</p>
+    <a class="btn btn-primary btn-lg" href="{% url 'shows:list' %}" role="button">Browse Shows</a>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <h3 class="card-title">Browse Shows</h3>
+                <p class="card-text">Explore our collection of shows, movies, and events.</p>
+                <a href="{% url 'shows:list' %}" class="btn btn-outline-primary">View Shows</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <h3 class="card-title">Book Tickets</h3>
+                <p class="card-text">Select your preferred seats and book tickets.</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'shows:list' %}" class="btn btn-outline-primary">Book Now</a>
+                {% else %}
+                    <a href="{% url 'users:login' %}" class="btn btn-outline-primary">Login to Book</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <h3 class="card-title">My Bookings</h3>
+                <p class="card-text">View your booking history and upcoming shows.</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'bookings:history' %}" class="btn btn-outline-primary">View Bookings</a>
+                {% else %}
+                    <a href="{% url 'users:login' %}" class="btn btn-outline-primary">Login to View</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Ticket Booking System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="auth-form">
+            <h2 class="text-center mb-4">Create an Account</h2>
+            
+            {% if errors.register %}
+                <div class="alert alert-danger">{{ errors.register }}</div>
+            {% endif %}
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control {% if errors.username %}is-invalid{% endif %}" 
+                           id="username" name="username" value="{{ username|default:'' }}">
+                    {% if errors.username %}
+                        <div class="invalid-feedback">{{ errors.username }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control {% if errors.email %}is-invalid{% endif %}" 
+                           id="email" name="email" value="{{ email|default:'' }}">
+                    {% if errors.email %}
+                        <div class="invalid-feedback">{{ errors.email }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control {% if errors.password %}is-invalid{% endif %}" 
+                           id="password" name="password">
+                    {% if errors.password %}
+                        <div class="invalid-feedback">{{ errors.password }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password2" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control {% if errors.password2 %}is-invalid{% endif %}" 
+                           id="password2" name="password2">
+                    {% if errors.password2 %}
+                        <div class="invalid-feedback">{{ errors.password2 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </div>
+            </form>
+            
+            <div class="text-center mt-3">
+                <p>Already have an account? <a href="{% url 'users:login' %}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

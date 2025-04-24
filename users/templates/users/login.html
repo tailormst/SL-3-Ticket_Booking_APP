@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Ticket Booking System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="auth-form">
+            <h2 class="text-center mb-4">Login to Your Account</h2>
+            
+            {% if errors.login %}
+                <div class="alert alert-danger">{{ errors.login }}</div>
+            {% endif %}
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control {% if errors.username %}is-invalid{% endif %}" 
+                           id="username" name="username" value="{{ username|default:'' }}">
+                    {% if errors.username %}
+                        <div class="invalid-feedback">{{ errors.username }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control {% if errors.password %}is-invalid{% endif %}" 
+                           id="password" name="password">
+                    {% if errors.password %}
+                        <div class="invalid-feedback">{{ errors.password }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </form>
+            
+            <div class="text-center mt-3">
+                <p>Don't have an account? <a href="{% url 'users:register' %}">Register here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

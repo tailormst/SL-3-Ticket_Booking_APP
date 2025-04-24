@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}My Bookings - Ticket Booking System{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">My Bookings</h1>
+
+{% if bookings %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Show</th>
+                    <th>Date & Time</th>
+                    <th>Seats</th>
+                    <th>Total Price</th>
+                    <th>Booking Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr>
+                        <td>#{{ booking.id }}</td>
+                        <td>{{ booking.showtime.show.title }}</td>
+                        <td>{{ booking.showtime.date }} {{ booking.showtime.time }}</td>
+                        <td>
+                            {% for booked_seat in booking.booked_seats.all %}
+                                {{ booked_seat.seat.row }}{{ booked_seat.seat.number }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>${{ booking.total_price }}</td>
+                        <td>{{ booking.booking_date|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'bookings:detail' booking.id %}" class="btn btn-sm btn-primary">View Details</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <p>You haven't made any bookings yet.</p>
+    </div>
+    <a href="{% url 'shows:list' %}" class="btn btn-primary">Browse Shows</a>
+{% endif %}
+{% endblock %}

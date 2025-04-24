@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ show.title }} - Ticket Booking System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        {% if show.image %}
+            <img src="{{ show.image.url }}" class="img-fluid rounded shadow" alt="{{ show.title }}">
+        {% else %}
+            <div class="bg-light text-center py-5 rounded">
+                <span class="text-muted">No image available</span>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-8">
+        <h1 class="mb-3">{{ show.title }}</h1>
+        <span class="badge {% if show.category == 'INDIAN' %}bg-success{% elif show.category == 'HOLLYWOOD' %}bg-primary{% else %}bg-secondary{% endif %} mb-3">
+            {{ show.get_category_display }}
+        </span>
+        <p class="lead">{{ show.description }}</p>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <p><strong>Duration:</strong> {{ show.duration }} minutes</p>
+                <p><strong>Release Date:</strong> {{ show.release_date }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mt-5 mb-4">Available Showtimes</h2>
+
+{% if showtimes %}
+    <div class="row">
+        {% for showtime in showtimes %}
+            <div class="col-md-3 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ showtime.date|date:"l, F j, Y" }}</h5>
+                        <p class="card-text">Time: {{ showtime.time|time:"g:i A" }}</p>
+                        <p class="card-text">Price: ${{ showtime.price }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'shows:seat_selection' showtime.id %}" class="btn btn-primary w-100">Select Seats</a>
+                        {% else %}
+                            <a href="{% url 'users:login' %}?next={% url 'shows:seat_selection' showtime.id %}" class="btn btn-primary w-100">Login to Book</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <p>No showtimes available for this show at the moment. Please check back later.</p>
+    </div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{% url 'shows:list' %}" class="btn btn-outline-secondary">Back to Shows</a>
+</div>
+{% endblock %}
